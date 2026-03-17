@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d1a0d">
+  <title>DuaCounter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22DuaCounter%22%2C%22short_name%22%3A%22DuaCounter%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1a0d%22%2C%22theme_color%22%3A%22%230d1a0d%22%7D">
+<style>
+/* ── Reset & Variables ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-primary:     #0d1a0d;
+  --bg-secondary:   #1a2e1a;
+  --bg-card:        #1f361f;
+  --bg-glass:       rgba(31, 54, 31, 0.85);
+  --gold-primary:   #c9a84c;
+  --gold-light:     #e8c96d;
+  --gold-dim:       #8b6914;
+  --text-primary:   #f5f0e8;
+  --text-secondary: #b8a98a;
+  --text-arabic:    #e8c96d;
+  --text-sage:      #7a9e72;
+  --accent-red:     #8b2020;
+  --border-gold:    rgba(201, 168, 76, 0.25);
+  --shadow-gold:    rgba(201, 168, 76, 0.15);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Tajawal', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--bg-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23c9a84c' stroke-width='0.5' opacity='0.04'%3E%3Cpolygon points='40,8 48,20 62,20 52,30 56,44 40,36 24,44 28,30 18,20 32,20'/%3E%3Cpolygon points='40,12 50,26 66,26 54,36 59,52 40,42 21,52 26,36 14,26 30,26' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  position: relative;
+}
+
+/* ── Screens ─────────────────────────────────────────────── */
+.screen {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  min-height: 100dvh;
+  min-height: 100vh;
+}
+.screen.active {
+  display: block;
+  opacity: 1;
+}
+.screen.fading { opacity: 0; pointer-events: none; }
+
+/* ── Touch targets ───────────────────────────────────────── */
+button, [role="button"], a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+input { font-size: 16px; }
+
+/* ── Ornamental Divider ──────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  margin: 8px 0;
+}
+.divider svg { width: 100%; height: 20px; }
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 1 — CATEGORY SELECTION
+══════════════════════════════════════════════════════════ */
+#screen1 {
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.s1-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+}
+.s1-brand { display: flex; flex-direction: column; }
+.s1-brand-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 42px;
+  color: var(--gold-primary);
+  line-height: 1;
+}
+.s1-brand-en {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: var(--text-sage);
+  margin-top: 2px;
+  letter-spacing: 0.05em;
+}
+.s1-heart-btn {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--gold-primary);
+  padding: 8px;
+  border-radius: 50%;
+  min-height: 44px;
+  min-width: 44px;
+}
+.s1-heart-btn:active { transform: scale(0.92); }
+.bookmark-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: var(--gold-primary);
+  color: var(--bg-primary);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.bookmark-badge.hidden { display: none; }
+
+.s1-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 4px 16px 12px;
+}
+
+/* Category grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 16px 16px;
+}
+.cat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 16px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cat-card:hover, .cat-card:active {
+  box-shadow: 0 0 20px var(--shadow-gold);
+  border-color: var(--gold-primary);
+  transform: scale(1.03);
+}
+.cat-emoji { font-size: 28px; line-height: 1; }
+.cat-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+}
+.cat-count {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 11px;
+  color: var(--gold-primary);
+  background: rgba(201, 168, 76, 0.15);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 2 — DUA SELECTION
+══════════════════════════════════════════════════════════ */
+#screen2 {
+  overflow-y: auto;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+.s2-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border-gold);
+}
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--gold-primary);
+  font-size: 22px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+}
+.back-btn:active { opacity: 0.7; }
+.s2-cat-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--gold-primary);
+  text-align: center;
+  flex: 1;
+  padding: 0 8px;
+}
+.s2-bm-btn {
+  background: none;
+  border: none;
+  color: var(--gold-primary);
+  font-size: 20px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+}
+
+.dua-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* Dua card */
+.dua-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 16px;
+  padding: 18px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+.dua-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dua-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 22px;
+  color: var(--text-arabic);
+  line-height: 1.9;
+  direction: rtl;
+  text-align: right;
+  width: 100%;
+}
+.dua-translation {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.dua-significance {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 12px;
+  color: var(--text-sage);
+  font-style: italic;
+  margin-top: 6px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dua-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+}
+.dua-source {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 10px;
+  color: var(--gold-dim);
+  background: rgba(201, 168, 76, 0.1);
+  padding: 3px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dua-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn-bookmark {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  color: var(--gold-primary);
+  background: none;
+  border: 1px solid var(--gold-primary);
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 36px;
+  min-height: 36px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+.btn-bookmark:active { opacity: 0.7; transform: scale(0.95); }
+.btn-bookmark.bookmarked {
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold-light);
+}
+.btn-begin {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  color: var(--bg-primary);
+  background: var(--gold-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 36px;
+  min-height: 36px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+.btn-begin:active { opacity: 0.85; transform: scale(0.97); }
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 3 — COUNTER (no scroll, full viewport)
+══════════════════════════════════════════════════════════ */
+#screen3 {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+#screen3.active { display: flex; }
+
+/* S3 Top bar */
+.s3-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 10px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  flex-shrink: 0;
+  z-index: 5;
+}
+.s3-cat-pill {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 12px;
+  color: var(--bg-primary);
+  background: var(--gold-primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.s3-actions { display: flex; gap: 4px; }
+.s3-icon-btn {
+  background: none;
+  border: none;
+  color: var(--gold-primary);
+  font-size: 18px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 6px;
+  border-radius: 8px;
+  transition: background 0.2s, opacity 0.2s;
+}
+.s3-icon-btn:active { opacity: 0.7; background: rgba(201,168,76,0.1); }
+
+/* Top half */
+.s3-top-half {
+  height: 50dvh;
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.s3-dua-arabic {
+  font-family: 'Amiri', serif;
+  font-size: clamp(18px, 5vw, 26px);
+  color: var(--text-arabic);
+  direction: rtl;
+  text-align: center;
+  line-height: 2;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.s3-dua-translation {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(12px, 3vw, 15px);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 8px;
+}
+.s3-dua-translit {
+  font-family: 'Tajawal', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-sage);
+  text-align: center;
+  margin-top: 6px;
+  padding: 0 8px;
+  line-height: 1.4;
+}
+
+/* Bottom half */
+.s3-bottom-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, var(--bg-secondary) 0%, var(--bg-primary) 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Counter zone */
+#counter-zone {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* SVG arc */
+.progress-ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring-svg {
+  position: absolute;
+  top: 0; left: 0;
+  transform: rotate(-90deg);
+}
+#count-display {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(72px, 20vw, 100px);
+  color: var(--gold-primary);
+  line-height: 1;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
+@keyframes count-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+#count-display.pulse { animation: count-pulse 200ms ease-out forwards; }
+@keyframes gold-flash {
+  0%   { color: var(--gold-primary); }
+  50%  { color: var(--gold-light); text-shadow: 0 0 20px rgba(232,201,109,0.8); }
+  100% { color: var(--gold-primary); }
+}
+#count-display.complete-flash { animation: gold-flash 400ms ease-out forwards; }
+
+.count-completed-text {
+  font-family: 'Amiri', serif;
+  font-size: 18px;
+  color: var(--gold-light);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  margin-top: 4px;
+  position: absolute;
+  bottom: calc(50% - 95px);
+}
+.count-completed-text.show { opacity: 1; }
+
+.hint-text {
+  position: absolute;
+  bottom: 64px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 11px;
+  color: rgba(201, 168, 76, 0.45);
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.hint-text.hidden { opacity: 0; }
+
+/* Ripple */
+.ripple {
+  position: absolute;
+  width: 12px; height: 12px;
+  background: rgba(201, 168, 76, 0.35);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-out 0.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple-out {
+  to { transform: translate(-50%, -50%) scale(28); opacity: 0; }
+}
+
+/* Bottom controls */
+.s3-controls {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 5;
+  pointer-events: none;
+}
+.s3-controls > * { pointer-events: all; }
+.btn-reset {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  color: var(--accent-red);
+  background: none;
+  border: none;
+  min-height: 44px;
+  padding: 0 8px;
+  touch-action: manipulation;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+.btn-reset.shaking { animation: shake 300ms ease; }
+.s3-recommended {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 11px;
+  color: var(--text-sage);
+  text-align: center;
+}
+.btn-decrement {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  color: var(--gold-dim);
+  background: none;
+  border: none;
+  min-height: 44px;
+  padding: 0 8px;
+  touch-action: manipulation;
+}
+.btn-decrement:active { opacity: 0.7; }
+
+/* ══════════════════════════════════════════════════════════
+   BOOKMARKS DRAWER
+══════════════════════════════════════════════════════════ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.drawer-panel {
+  position: fixed;
+  right: 0; top: 0;
+  height: 100%;
+  width: min(340px, 92vw);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-gold);
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.drawer-panel.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 16px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border-gold);
+  flex-shrink: 0;
+}
+.drawer-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  color: var(--gold-primary);
+}
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  min-width: 40px;
+  min-height: 40px;
+}
+.drawer-close:active { opacity: 0.7; }
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+.drawer-empty {
+  font-family: 'Tajawal', sans-serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-sage);
+  text-align: center;
+  padding: 40px 16px;
+}
+.drawer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.drawer-card-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 16px;
+  color: var(--text-arabic);
+  direction: rtl;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drawer-card-trans {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drawer-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.drawer-begin-btn {
+  flex: 1;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  background: var(--gold-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  height: 36px;
+  font-weight: 500;
+  touch-action: manipulation;
+}
+.drawer-begin-btn:active { opacity: 0.85; }
+.drawer-remove-btn {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 12px;
+  color: var(--accent-red);
+  background: none;
+  border: none;
+  padding: 0 8px;
+  height: 36px;
+  touch-action: manipulation;
+}
+.drawer-remove-btn:active { opacity: 0.7; }
+
+/* ── Bookmark heart pulse ──────────────────────────────── */
+@keyframes heart-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+.heart-pulse { animation: heart-pulse 250ms ease-out; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ SCREEN 1 ══════════ -->
+  <div id="screen1" class="screen active">
+    <div class="s1-topbar">
+      <div class="s1-brand">
+        <span class="s1-brand-arabic" dir="rtl">دعاء</span>
+        <span class="s1-brand-en">DuaCounter</span>
+      </div>
+      <button class="s1-heart-btn" id="open-drawer-btn" aria-label="Open bookmarks">
+        ❤
+        <span class="bookmark-badge hidden" id="bm-badge">0</span>
+      </button>
+    </div>
+
+    <p class="s1-subtitle">What do you seek today?</p>
+
+    <div class="divider">
+      <svg viewBox="0 0 300 20" preserveAspectRatio="none">
+        <line x1="0" y1="10" x2="136" y2="10" stroke="#8b6914" stroke-width="1"/>
+        <text x="150" y="15" font-size="12" fill="#8b6914" text-anchor="middle">✦</text>
+        <line x1="164" y1="10" x2="300" y2="10" stroke="#8b6914" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="category-grid" id="cat-grid"></div>
+  </div>
+
+  <!-- ══════════ SCREEN 2 ══════════ -->
+  <div id="screen2" class="screen">
+    <div class="s2-topbar">
+      <button class="back-btn" id="s2-back" aria-label="Go back">←</button>
+      <span class="s2-cat-title" id="s2-cat-title">Category</span>
+      <button class="s2-bm-btn" id="s2-bm-btn" aria-label="Bookmarks">❤</button>
+    </div>
+    <div class="dua-list" id="dua-list"></div>
+  </div>
+
+  <!-- ══════════ SCREEN 3 ══════════ -->
+  <div id="screen3" class="screen">
+    <div class="s3-topbar">
+      <button class="back-btn" id="s3-back" aria-label="Go back">←</button>
+      <span class="s3-cat-pill" id="s3-cat-pill">Category</span>
+      <div class="s3-actions">
+        <button class="s3-icon-btn" id="s3-bm-btn" aria-label="Bookmark this dua">♡</button>
+        <button class="s3-icon-btn" id="s3-share-btn" aria-label="Share this dua">⬆</button>
+      </div>
+    </div>
+
+    <div class="s3-top-half">
+      <div class="s3-dua-arabic" id="s3-arabic" dir="rtl"></div>
+      <div class="s3-dua-translation" id="s3-translation"></div>
+      <div class="s3-dua-translit" id="s3-translit"></div>
+    </div>
+
+    <div class="divider" style="flex-shrink:0;">
+      <svg viewBox="0 0 300 20" preserveAspectRatio="none">
+        <line x1="0" y1="10" x2="136" y2="10" stroke="#8b6914" stroke-width="1"/>
+        <text x="150" y="15" font-size="12" fill="#8b6914" text-anchor="middle">✦</text>
+        <line x1="164" y1="10" x2="300" y2="10" stroke="#8b6914" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="s3-bottom-half">
+      <div id="counter-zone" role="button" aria-label="Count">
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring-svg" id="progress-svg" width="140" height="140">
+            <circle id="arc-track" cx="70" cy="70" r="55"
+              fill="none" stroke="rgba(201,168,76,0.15)" stroke-width="2"/>
+            <circle id="arc-progress" cx="70" cy="70" r="55"
+              fill="none" stroke="#c9a84c" stroke-width="2"
+              stroke-linecap="round"
+              stroke-dasharray="345.4"
+              stroke-dashoffset="345.4"/>
+          </svg>
+          <span id="count-display">0</span>
+        </div>
+        <div class="count-completed-text" id="completed-text" dir="rtl">الحمد لله</div>
+        <div class="hint-text" id="hint-text">tap anywhere below to count</div>
+      </div>
+
+      <div class="s3-controls">
+        <button class="btn-reset" id="btn-reset" aria-label="Reset counter">Reset</button>
+        <span class="s3-recommended" id="s3-recommended"></span>
+        <button class="btn-decrement" id="btn-decrement" aria-label="Decrement counter">−1</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ BOOKMARKS DRAWER ══════════ -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer-panel" id="drawer-panel" role="dialog" aria-label="My Duas">
+  <div class="drawer-header">
+    <span class="drawer-title">My Duas ❤</span>
+    <button class="drawer-close" id="drawer-close" aria-label="Close drawer">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════
+   DUA DATA
+══════════════════════════════════════════════════════════ */
+const DUAS = [
+{id:1,category:"Sustenance & Rizq",name:"Dua of Musa – need for provision",arabic:"رَبِّ إِنِّي لِمَا أَنزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ",transliteration:"Rabbi innī limā anzalta ilayya min khayrin faqīr",translation:"My Lord, I am truly in need of whatever good You send down to me.",significance:"For anyone seeking halal provision — a job, marriage, or any goodness when feeling helpless. The dua of Prophet Musa ﷺ after fleeing Egypt with nothing.",source:"Quran 28:24",recommended_count:33},
+{id:2,category:"Sustenance & Rizq",name:"Dua for halal sustenance",arabic:"اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ",transliteration:"Allāhumma-kfinī bi-ḥalālika ʿan ḥarāmik, wa aghnini bi-faḍlika ʿamman siwāk",translation:"O Allah, make what is lawful enough for me as opposed to what is unlawful, and spare me by Your grace of need of others.",significance:"Prophetic dua for halal income and financial independence from people.",source:"Hisnul Muslim #128 | Tirmidhi (Hasan)",recommended_count:33},
+{id:3,category:"Sustenance & Rizq",name:"Knowledge, sustenance and accepted deeds",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا",transliteration:"Allāhumma innī as'aluka ʿilman nāfiʿan wa rizqan ṭayyiban wa ʿamalan mutaqabbalā",translation:"O Allah, I ask You for knowledge which is beneficial, sustenance which is good, and deeds which are acceptable.",significance:"Said after Fajr salah — three greatest asks combined in one dua.",source:"Hisnul Muslim #73 | Ibn Majah (Sahih)",recommended_count:1},
+{id:4,category:"Sustenance & Rizq",name:"Hasbiyallah – trust in Allah's sufficiency",arabic:"حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",transliteration:"Ḥasbiyallāhu lā ilāha illā huw, ʿalayhi tawakkaltu wa huwa rabbul-ʿarshil-ʿaẓīm",translation:"Allah is sufficient for me. None has the right to be worshipped except Him. Upon Him I place my trust, and He is the Lord of the Magnificent Throne.",significance:"Recited 7 times morning and evening — the Prophet ﷺ said Allah will suffice for whoever says this with sincerity.",source:"Quran 9:129",recommended_count:7},
+{id:5,category:"Sustenance & Rizq",name:"Dua of the People of the Cave",arabic:"رَبَّنَا آتِنَا مِن لَّدُنكَ رَحْمَةً وَهَيِّئْ لَنَا مِنْ أَمْرِنَا رَشَدًا",transliteration:"Rabbanā ātinā min ladunka raḥmatan wa hayyi' lanā min amrinā rashadā",translation:"Our Lord! Bestow on us mercy from Yourself, and facilitate for us our affair in the right way.",significance:"Seeking guided provision in complete helplessness — for any new beginning or uncertain situation.",source:"Quran 18:10",recommended_count:33},
+{id:6,category:"Marriage & Partnership",name:"Dua for righteous spouse and children",arabic:"رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",transliteration:"Rabbanā hab lanā min azwājinā wa dhurriyyātinā qurrata aʿyunin wajʿalnā lil-muttaqīna imāmā",translation:"Our Lord, grant us from our spouses and offspring comfort to our eyes and make us a leader for the righteous.",significance:"For those seeking a righteous spouse or wishing to strengthen an existing family bond.",source:"Quran 25:74",recommended_count:33},
+{id:7,category:"Marriage & Partnership",name:"Dua of Zakariyyah for good offspring",arabic:"رَبِّ هَبْ لِي مِن لَّدُنكَ ذُرِّيَّةً طَيِّبَةً إِنَّكَ سَمِيعُ الدُّعَاءِ",transliteration:"Rabbi hab lī min ladunka dhurriyyatan ṭayyibah, innaka samīʿud-duʿāʾ",translation:"O my Lord! Grant me from You a good offspring. You are indeed the All-Hearer of invocation.",significance:"The dua of Prophet Zakariyyah ﷺ who prayed for righteous descendants at old age.",source:"Quran 3:38",recommended_count:33},
+{id:8,category:"Marriage & Partnership",name:"Dua on the wedding night",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا وَخَيْرَ مَا جَبَلْتَهَا عَلَيْهِ وَأَعُوذُ بِكَ مِنْ شَرِّهَا وَمِنْ شَرِّ مَا جَبَلْتَهَا عَلَيْهِ",transliteration:"Allāhumma innī as'aluka khayrahā wa khayra mā jabaltahā ʿalayh, wa aʿūdhu bika min sharrihā wa min sharri mā jabaltahā ʿalayh",translation:"O Allah, I ask You for the good in her and the good You have made her inclined towards, and I seek refuge in You from the evil in her and the evil You have made her inclined towards.",significance:"The exact dua the Prophet ﷺ taught a groom to say upon marriage.",source:"Hisnul Muslim #74 | Abu Dawud (Sahih)",recommended_count:1},
+{id:9,category:"Marriage & Partnership",name:"Dua for Muslim offspring – Ibrahim ﷺ",arabic:"رَبَّنَا وَاجْعَلْنَا مُسْلِمَيْنِ لَكَ وَمِن ذُرِّيَّتِنَا أُمَّةً مُّسْلِمَةً لَّكَ وَأَرِنَا مَنَاسِكَنَا وَتُبْ عَلَيْنَا إِنَّكَ أَنتَ التَّوَّابُ الرَّحِيمُ",transliteration:"Rabbanā wa-jʿalnā muslimayn laka wa min dhurriyyatinā ummatan muslimatan lak, wa arinā manāsikanā wa tub ʿalaynā, innaka antat-tawwābur-raḥīm",translation:"Our Lord! Make us submissive to You, and from our offspring a nation submissive to You. Show us our ways of worship and accept our repentance. You are the Ever-Relenting, the Merciful.",significance:"The dua of Ibrahim ﷺ asking for himself and descendants to remain on Islam.",source:"Quran 2:128",recommended_count:33},
+{id:10,category:"Healing & Health",name:"Dua for curing the sick – 7 times",arabic:"أَسْأَلُ اللَّهَ الْعَظِيمَ رَبَّ الْعَرْشِ الْعَظِيمِ أَنْ يَشْفِيَكَ",transliteration:"As'alullāhal-ʿaẓīm, Rabbal-ʿarshil-ʿaẓīm, an yashfiyak",translation:"I ask Allah the Almighty, Lord of the Magnificent Throne, to cure you.",significance:"The Prophet ﷺ taught: whoever says this 7 times over a sick person, if their appointed time has not come, Allah will cure them.",source:"Hisnul Muslim #140 | Abu Dawud (Sahih)",recommended_count:7},
+{id:11,category:"Healing & Health",name:"Dua when visiting the sick",arabic:"لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ",transliteration:"Lā ba'sa ṭahūrun in shā'allāh",translation:"Do not worry, it is a purification, if Allah wills.",significance:"What the Prophet ﷺ would say when visiting a sick person — illness purifies the believer of sins.",source:"Hisnul Muslim #139 | Sahih al-Bukhari",recommended_count:3},
+{id:12,category:"Healing & Health",name:"Dua for pardon and well-being",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ",transliteration:"Allāhumma innī as'alukal-ʿafwa wal-ʿāfiyata fid-dunyā wal-ākhirah",translation:"O Allah, I ask You for pardon and well-being in this world and the Hereafter.",significance:"One of the duas the Prophet ﷺ recited most. Al-aafiyah covers health, safety, and soundness of mind and body.",source:"Ibn Majah | Abu Dawud (Sahih)",recommended_count:33},
+{id:13,category:"Healing & Health",name:"Ruqyah of Jibreel ﷺ",arabic:"بِسْمِ اللَّهِ أَرْقِيكَ مِنْ كُلِّ شَيْءٍ يُؤْذِيكَ مِنْ شَرِّ كُلِّ نَفْسٍ أَوْ عَيْنِ حَاسِدٍ اللَّهُ يَشْفِيكَ بِسْمِ اللَّهِ أَرْقِيكَ",transliteration:"Bismillāhi arqīka min kulli shay'in yu'dhīk, min sharri kulli nafsin aw ʿayni ḥāsidin, Allāhu yashfīk, bismillāhi arqīk",translation:"In the name of Allah I perform ruqyah for you, from everything that harms you, from the evil of every soul or envious eye. May Allah cure you. In the name of Allah I perform ruqyah for you.",significance:"The ruqyah Jibreel ﷺ performed on the Prophet ﷺ — recited 3 times for healing from illness and evil eye.",source:"Sahih Muslim 2186",recommended_count:3},
+{id:14,category:"Protection & Safety",name:"Morning and evening shield",arabic:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",transliteration:"Bismillāhil-ladhī lā yaḍurru maʿa-smihī shay'un fil-arḍi wa lā fis-samā'i wa huwas-samīʿul-ʿalīm",translation:"In the Name of Allah, with Whose Name nothing on earth or in heaven can cause harm, and He is the All-Hearing, All-Knowing.",significance:"Recited 3 times morning and evening — the Prophet ﷺ said nothing will harm the one who says it.",source:"Hisnul Muslim | Abu Dawud & Tirmidhi (Sahih)",recommended_count:3},
+{id:15,category:"Protection & Safety",name:"Refuge in Allah's perfect words",arabic:"أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",transliteration:"Aʿūdhu bi-kalimātillāhit-tāmmāti min sharri mā khalaq",translation:"I seek refuge in the perfect words of Allah from the evil of what He has created.",significance:"Recited when stopping at any place or before sleep — shields from harm, evil eye, and every created thing.",source:"Hisnul Muslim | Sahih Muslim",recommended_count:3},
+{id:16,category:"Protection & Safety",name:"Protection from grave, fire and Dajjal",arabic:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ وَمِنْ عَذَابِ جَهَنَّمَ وَمِنْ فِتْنَةِ الْمَحْيَا وَالْمَمَاتِ وَمِنْ شَرِّ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ",transliteration:"Allāhumma innī aʿūdhu bika min ʿadhābil-qabr, wa min ʿadhābi jahannam, wa min fitnatil-maḥyā wal-mamāt, wa min sharri fitnatil-masīḥid-dajjāl",translation:"O Allah, I take refuge in You from the punishment of the grave, from the torment of the Fire, from the trials of life and death, and from the evil of the trial of Al-Maseeh Ad-Dajjal.",significance:"Recited in the final tashahhud of every salah. One of the most comprehensive protection duas in Islam.",source:"Hisnul Muslim #55 | Sahih al-Bukhari & Muslim",recommended_count:1},
+{id:17,category:"Protection & Safety",name:"Protection for children – prophetic",arabic:"أُعِيذُكُمَا بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ",transliteration:"Uʿīdhukumā bi-kalimātillāhit-tāmmah, min kulli shayṭānin wa hāmmah, wa min kulli ʿaynin lāmmah",translation:"I commend you two to the protection of Allah's perfect words from every devil, poisonous creature, and every evil eye.",significance:"The exact words the Prophet ﷺ used to protect Al-Hasan and Al-Husayn — recited over children morning and evening.",source:"Hisnul Muslim #138 | Sahih al-Bukhari",recommended_count:3},
+{id:18,category:"Protection & Safety",name:"Refuge from shaytan's whisperings",arabic:"رَّبِّ أَعُوذُ بِكَ مِنْ هَمَزَاتِ الشَّيَاطِينِ وَأَعُوذُ بِكَ رَبِّ أَن يَحْضُرُونِ",transliteration:"Rabbi aʿūdhu bika min hamazātish-shayāṭīn, wa aʿūdhu bika rabbi an yaḥḍurūn",translation:"My Lord! I seek refuge with You from the whisperings of the devils. And I seek refuge with You, My Lord, lest they come near me.",significance:"Recited for protection from evil whispers, intrusive thoughts, and the presence of shaytan.",source:"Quran 23:97-98",recommended_count:33},
+{id:19,category:"Knowledge & Wisdom",name:"Rabbi Zidni Ilma",arabic:"رَّبِّ زِدْنِي عِلْمًا",transliteration:"Rabbi zidnī ʿilmā",translation:"My Lord, increase me in knowledge.",significance:"The only verse in the Quran where Allah directly commands the Prophet ﷺ to ask for more of something — making this the most affirmed dua for knowledge.",source:"Quran 20:114",recommended_count:100},
+{id:20,category:"Knowledge & Wisdom",name:"Dua of Musa for clarity and speech",arabic:"رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي",transliteration:"Rabbi-shraḥ lī ṣadrī, wa yassir lī amrī, wa-ḥlul ʿuqdatan min lisānī, yafqahū qawlī",translation:"My Lord, expand for me my breast, ease my task for me, and remove the impediment from my speech so they may understand what I say.",significance:"Recited before speaking, teaching, presenting, or studying — for clarity of mind, ease of speech, and being understood.",source:"Quran 20:25-28",recommended_count:33},
+{id:21,category:"Knowledge & Wisdom",name:"Dua for guidance and piety",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",transliteration:"Allāhumma innī as'alukal-hudā wat-tuqā wal-ʿafāfa wal-ghinā",translation:"O Allah, I ask You for guidance, piety, chastity and self-sufficiency.",significance:"A short comprehensive prophetic dua covering spiritual, moral, and material needs in just four words.",source:"Sahih Muslim 2721",recommended_count:33},
+{id:22,category:"Knowledge & Wisdom",name:"Dua for beautifying faith",arabic:"اللَّهُمَّ زَيِّنَّا بِزِينَةِ الْإِيمَانِ وَاجْعَلْنَا هُدَاةً مُهْتَدِينَ",transliteration:"Allāhumma zayyinnā bi-zīnatil-īmān, wajʿalnā hudātan muhtadīn",translation:"O Allah, beautify us with the adornment of faith and make us of those who guide and are rightly guided.",significance:"Asking for faith to be made beautiful within us and for the ability to guide others.",source:"Hisnul Muslim #62 | al-Nasa'i (Sahih)",recommended_count:33},
+{id:23,category:"Work & Success",name:"Dua when affairs become difficult",arabic:"اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا وَأَنْتَ تَجْعَلُ الْحَزَنَ إِذَا شِئْتَ سَهْلًا",transliteration:"Allāhumma lā sahla illā mā jaʿaltahu sahlā, wa anta tajʿalul-ḥazana idhā shi'ta sahlā",translation:"O Allah, there is no ease except in that which You have made easy, and You make difficulty easy if You so wish.",significance:"For job interviews, deadlines, exams, or any challenging task — asking Allah to make the hard path easy.",source:"Hisnul Muslim #131 | Ibn Hibban (Sahih)",recommended_count:33},
+{id:24,category:"Work & Success",name:"The comprehensive worldly and hereafter dua",arabic:"رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",transliteration:"Rabbanā ātinā fid-dunyā ḥasanatan wa fil-ākhirati ḥasanatan wa qinā ʿadhāban-nār",translation:"Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire.",significance:"The most comprehensive dua in the Quran — covers worldly success, career, health, and eternal salvation in one.",source:"Quran 2:201",recommended_count:33},
+{id:25,category:"Work & Success",name:"Dua al-Istikhara – guidance in decisions",arabic:"اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ وَتَعْلَمُ وَلَا أَعْلَمُ وَأَنْتَ عَلَّامُ الْغُيُوبِ",transliteration:"Allāhumma innī astakhīruka biʿilmik, wa astaqdiruka biqudratik, wa as'aluka min faḍlikal-ʿaẓīm, fa'innaka taqdiru wa lā aqdir, wa taʿlamu wa lā aʿlam, wa anta ʿallāmul-ghuyūb",translation:"O Allah, I seek Your counsel by Your knowledge and by Your power I seek strength and I ask You from Your immense favour, for verily You are able while I am not and You know while I do not and You are the Knower of the unseen.",significance:"The complete prophetic Istikhara dua — made before any major decision after 2 rakahs of voluntary prayer.",source:"Hisnul Muslim #74 | Sahih al-Bukhari",recommended_count:1},
+{id:26,category:"Work & Success",name:"Dua for a good life and end",arabic:"اللَّهُمَّ بِعِلْمِكَ الْغَيْبَ وَقُدْرَتِكَ عَلَى الْخَلْقِ أَحْيِنِي مَا عَلِمْتَ الْحَيَاةَ خَيْرًا لِي وَتَوَفَّنِي إِذَا عَلِمْتَ الْوَفَاةَ خَيْرًا لِي",transliteration:"Allāhumma biʿilmikal-ghayb wa qudratika ʿalal-khalq, aḥyinī mā ʿalimtal-ḥayāta khayran lī, wa tawaffanī idhā ʿalimtal-wafāta khayran lī",translation:"O Allah, by Your knowledge of the unseen and Your power over creation, keep me alive so long as You know such life to be good for me, and take me when You know death to be better for me.",significance:"Placing one's entire life and career trajectory in Allah's hands — for those navigating major life decisions.",source:"Hisnul Muslim #62 | al-Nasa'i (Sahih)",recommended_count:1},
+{id:27,category:"Children & Family",name:"Dua of Zakariyyah for a child",arabic:"رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنتَ خَيْرُ الْوَارِثِينَ",transliteration:"Rabbi lā tadharni fardan wa anta khayrul-wārithīn",translation:"My Lord! Leave me not alone (childless), though You are the best of inheritors.",significance:"The heartfelt dua of a prophet who longed for a child in old age — for those seeking to be blessed with children.",source:"Quran 21:89",recommended_count:33},
+{id:28,category:"Children & Family",name:"Dua for prayer-establishing offspring",arabic:"رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِن ذُرِّيَّتِي رَبَّنَا وَتَقَبَّلْ دُعَاءِ",transliteration:"Rabbi-jʿalnī muqīmaṣ-ṣalāh, wa min dhurriyyatī, rabbanā wa taqabbal duʿāʾ",translation:"O my Lord! Make me one who establishes prayer, and also my offspring. Our Lord, accept my invocation.",significance:"The dua of Ibrahim ﷺ for himself and his children to be steadfast in prayer.",source:"Quran 14:40",recommended_count:33},
+{id:29,category:"Children & Family",name:"Dua for forgiveness of parents",arabic:"رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ",transliteration:"Rabbanā-ghfir lī wa liwālidayya wa lil-mu'minīna yawma yaqūmul-ḥisāb",translation:"Our Lord! Forgive me and my parents, and all the believers on the Day when the reckoning will be established.",significance:"For those who wish to honour parents through supplication — one of the greatest acts of care.",source:"Quran 14:41",recommended_count:33},
+{id:30,category:"Children & Family",name:"Protection for children – prophetic",arabic:"أُعِيذُكُمَا بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ",transliteration:"Uʿīdhukumā bi-kalimātillāhit-tāmmah, min kulli shayṭānin wa hāmmah, wa min kulli ʿaynin lāmmah",translation:"I commend you to the protection of Allah's perfect words from every devil, poisonous creature, and every evil eye.",significance:"The exact words the Prophet ﷺ used to protect Al-Hasan and Al-Husayn — recited over children morning and evening.",source:"Hisnul Muslim #138 | Sahih al-Bukhari",recommended_count:3},
+{id:31,category:"Forgiveness & Repentance",name:"Dua Yunus – from the whale",arabic:"لَا إِلَهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ",transliteration:"Lā ilāha illā anta subḥānaka innī kuntu minaẓ-ẓālimīn",translation:"None has the right to be worshipped but You. How perfect You are. Verily, I was among the wrongdoers.",significance:"The dua that rescued Prophet Yunus ﷺ from the belly of the whale — described in hadith as guaranteed to be answered.",source:"Quran 21:87 | Hisnul Muslim #120",recommended_count:33},
+{id:32,category:"Forgiveness & Repentance",name:"Sayyid al-Istighfar – Master of Forgiveness",arabic:"اللَّهُمَّ أَنتَ رَبِّي لَا إِلَهَ إِلَّا أَنتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنتَ",transliteration:"Allāhumma anta rabbī lā ilāha illā anta, khalaqtanī wa ana ʿabduk, wa ana ʿalā ʿahdika wa waʿdika mastaṭaʿt, aʿūdhu bika min sharri mā ṣanaʿt, abū'u laka biniʿmatika ʿalayy, wa abū'u bidhanbī, faghfir lī, fa'innahū lā yaghfirudh-dhunūba illā ant",translation:"O Allah, You are my Lord. None has the right to be worshipped except You. You created me and I am Your servant. I hold to Your covenant and promise as much as I can. I seek refuge in You from the evil of what I have done. I acknowledge Your favour upon me and acknowledge my sin. Forgive me, for none forgives sins except You.",significance:"The Master of Seeking Forgiveness. The Prophet ﷺ said whoever says it with conviction morning or evening and dies that day is guaranteed Paradise.",source:"Sahih al-Bukhari #6306",recommended_count:3},
+{id:33,category:"Forgiveness & Repentance",name:"Simple Istighfar",arabic:"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ",transliteration:"Astaghfirullāha wa atūbu ilayh",translation:"I seek forgiveness from Allah and I turn to Him in repentance.",significance:"The most concise form of seeking forgiveness — the Prophet ﷺ would say this 100 times a day.",source:"Sahih al-Bukhari & Muslim",recommended_count:100},
+{id:34,category:"Forgiveness & Repentance",name:"I have wronged myself greatly",arabic:"اللَّهُمَّ إِنِّي ظَلَمْتُ نَفْسِي ظُلْمًا كَثِيرًا وَلَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ فَاغْفِرْ لِي مَغْفِرَةً مِنْ عِنْدِكَ وَارْحَمْنِي إِنَّكَ أَنْتَ الْغَفُورُ الرَّحِيمُ",transliteration:"Allāhumma innī ẓalamtu nafsī ẓulman kathīran wa lā yaghfirudh-dhunūba illā ant, faghfir lī maghfiratan min ʿindik warḥamnī, innaka antal-ghafūrur-raḥīm",translation:"O Allah, I have indeed oppressed my soul greatly and none can forgive sin except You, so forgive me a forgiveness from Yourself and have mercy upon me. Surely, You are The Most-Forgiving, The Most-Merciful.",significance:"Recited in the final tashahhud of salah — deep acknowledgement of personal sin and complete reliance on Allah's mercy.",source:"Hisnul Muslim #57 | Sahih al-Bukhari & Muslim",recommended_count:3},
+{id:35,category:"Forgiveness & Repentance",name:"Our Lord, we have wronged ourselves – Adam ﷺ",arabic:"رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",transliteration:"Rabbanā ẓalamnā anfusanā wa in lam taghfir lanā wa tarḥamnā lanakūnanna minal-khāsirīn",translation:"Our Lord! We have wronged ourselves. If You forgive us not, and bestow not upon us Your Mercy, we shall certainly be of the losers.",significance:"The dua of Adam and Hawwa ﷺ — the first act of repentance in human history.",source:"Quran 7:23",recommended_count:33},
+{id:36,category:"Forgiveness & Repentance",name:"Forgive all past and future sins",arabic:"اللَّهُمَّ اغْفِرْ لِي مَا قَدَّمْتُ وَمَا أَخَّرْتُ وَمَا أَسْرَرْتُ وَمَا أَعْلَنْتُ وَمَا أَسْرَفْتُ وَمَا أَنْتَ أَعْلَمُ بِهِ مِنِّي أَنْتَ الْمُقَدِّمُ وَأَنْتَ الْمُؤَخِّرُ لَا إِلَهَ إِلَّا أَنْتَ",transliteration:"Allāhumma-ghfir lī mā qaddamtu wa mā akhkhart, wa mā asrartu wa mā aʿlant, wa mā asraft, wa mā anta aʿlamu bihi minnī. Antal-muqaddimu wa antal-mu'akhkhir, lā ilāha illā ant",translation:"O Allah, forgive me for those sins which have come to pass as well as those which shall come to pass, and those I have committed in secret as well as those I have made public, and where I have exceeded all bounds.",significance:"A comprehensive forgiveness dua covering every category of sin — past, future, secret, public, and excess.",source:"Hisnul Muslim #58 | Sahih al-Bukhari & Muslim",recommended_count:3},
+{id:37,category:"Anxiety & Grief",name:"Protection from anxiety and sorrow",arabic:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ وَالْعَجْزِ وَالْكَسَلِ وَالْبُخْلِ وَالْجُبْنِ وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ",transliteration:"Allāhumma innī aʿūdhu bika minal-hammi wal-ḥazan, wal-ʿajzi wal-kasal, wal-bukhli wal-jubn, wa ḍalaʿid-dayn wa ghalabatir-rijāl",translation:"O Allah, I seek refuge in You from anxiety and sorrow, from weakness and laziness, from miserliness and cowardice, from the burden of debt and from being overpowered by men.",significance:"The most comprehensive prophetic protection against all forms of emotional, financial, and social distress.",source:"Hisnul Muslim #117 | Sahih al-Bukhari",recommended_count:33},
+{id:38,category:"Anxiety & Grief",name:"Surrender all affairs to Allah",arabic:"اللَّهُمَّ رَحْمَتَكَ أَرْجُو فَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ وَأَصْلِحْ لِي شَأْنِي كُلَّهُ لَا إِلَهَ إِلَّا أَنتَ",transliteration:"Allāhumma raḥmataka arjū falā takilnī ilā nafsī ṭarfata ʿayn, wa aṣliḥ lī sha'nī kullah, lā ilāha illā ant",translation:"O Allah, it is Your mercy that I hope for, so do not leave me in charge of my affairs even for the blink of an eye. And rectify all of my affairs. None has the right to be worshipped except You.",significance:"For moments of complete overwhelm — surrendering all affairs to Allah when you cannot handle things yourself.",source:"Hisnul Muslim #119 | Abu Dawud (Hasan)",recommended_count:33},
+{id:39,category:"Anxiety & Grief",name:"Dua of distress – three proclamations",arabic:"لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ",transliteration:"Lā ilāha illallāhul-ʿaẓīmul-ḥalīm. Lā ilāha illallāhu rabbul-ʿarshil-ʿaẓīm. Lā ilāha illallāhu rabbus-samāwāti wa rabbul-arḍi wa rabbul-ʿarshil-karīm",translation:"None has the right to be worshipped except Allah, the Great, the Forbearing. None...Lord of the magnificent throne. None...Lord of the heavens, Lord of the Earth, and Lord of the noble throne.",significance:"Recited in times of distress — affirms Allah's supreme authority over all creation to bring calm and trust.",source:"Hisnul Muslim #118 | Sahih al-Bukhari & Muslim",recommended_count:33},
+{id:40,category:"Anxiety & Grief",name:"Quran as healing for the heart",arabic:"اللَّهُمَّ إِنِّي عَبْدُكَ ابْنُ عَبْدِكَ ابْنُ أَمَتِكَ نَاصِيَتِي بِيَدِكَ مَاضٍ فِيَّ حُكْمُكَ عَدْلٌ فِيَّ قَضَاؤُكَ أَسْأَلُكَ بِكُلِّ اسْمٍ هُوَ لَكَ سَمَّيْتَ بِهِ نَفْسَكَ أَوْ أَنْزَلْتَهُ فِي كِتَابِكَ أَنْ تَجْعَلَ الْقُرْآنَ رَبِيعَ قَلْبِي وَنُورَ صَدْرِي وَجَلَاءَ حُزْنِي وَذَهَابَ هَمِّي",transliteration:"Allāhumma innī ʿabduka bnu ʿabdika bnu amatik, nāṣiyatī biyadik, māḍin fiyya ḥukmuk, ʿadlun fiyya qaḍā'uk... an tajʿalal-Qur'āna rabīʿa qalbī wa nūra ṣadrī wa jalā'a ḥuznī wa dhahāba hammī",translation:"O Allah, I am Your servant, son of Your servant, son of Your maidservant, my forelock is in Your hand... I ask You to make the Quran the life of my heart and the light of my breast, and a departure for my sorrow and a release for my anxiety.",significance:"The Prophet ﷺ said whoever says this, Allah will remove their grief and replace it with joy.",source:"Hisnul Muslim #116 | Ahmad (Sahih)",recommended_count:1},
+{id:41,category:"Anxiety & Grief",name:"Hasbunallah – Allah is sufficient",arabic:"حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",transliteration:"Ḥasbunallāhu wa niʿmal-wakīl",translation:"Allah is sufficient for us and He is the best disposer of affairs.",significance:"The words Ibrahim ﷺ said when thrown into the fire. Recited in moments of fear, helplessness, and feeling threatened.",source:"Quran 3:173 | Sahih al-Bukhari",recommended_count:33},
+{id:42,category:"General Worship",name:"Steadfastness in faith",arabic:"رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِن لَّدُنكَ رَحْمَةً إِنَّكَ أَنتَ الْوَهَّابُ",transliteration:"Rabbanā lā tuzigh qulūbanā baʿda idh hadaytanā wa hab lanā min ladunka raḥmah, innaka antal-wahhāb",translation:"Our Lord! Let not our hearts deviate after You have guided us, and grant us from Yourself mercy. Indeed, You are the Bestower.",significance:"A dua for steadfastness in iman — recited by those who fear drifting from the straight path.",source:"Quran 3:8",recommended_count:33},
+{id:43,category:"General Worship",name:"Help to remember, thank and worship",arabic:"اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",transliteration:"Allāhumma aʿinnī ʿalā dhikrika wa shukrika wa ḥusni ʿibādatik",translation:"O Allah, help me to remember You, to thank You, and to worship You in the best of manners.",significance:"The Prophet ﷺ taught this to Mu'adh ibn Jabal ﷺ and instructed him to say it after every salah.",source:"Hisnul Muslim #59 | Abu Dawud (Sahih)",recommended_count:1},
+{id:44,category:"General Worship",name:"Avert from us the punishment of Hell",arabic:"رَبَّنَا اصْرِفْ عَنَّا عَذَابَ جَهَنَّمَ إِنَّ عَذَابَهَا كَانَ غَرَامًا",transliteration:"Rabbanā-ṣrif ʿannā ʿadhāba jahannam, inna ʿadhābahā kāna gharāmā",translation:"Our Lord! Avert from us the doom of Hell; its punishment is indeed a constant torment.",significance:"A dua of deep spiritual awareness and seeking Allah's mercy from the Hellfire.",source:"Quran 25:65",recommended_count:33},
+{id:45,category:"General Worship",name:"Dua for accepted deeds – Ibrahim ﷺ",arabic:"رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنتَ السَّمِيعُ الْعَلِيمُ",transliteration:"Rabbanā taqabbal minnā innaka antas-samīʿul-ʿalīm",translation:"Our Lord! Accept from us. Indeed, You are the All-Hearing, All-Knowing.",significance:"The dua of Ibrahim and Ismail ﷺ when building the Kaaba — recited after any act of worship.",source:"Quran 2:127",recommended_count:33},
+{id:46,category:"General Worship",name:"Our Lord, in You we trust",arabic:"رَبَّنَا عَلَيْكَ تَوَكَّلْنَا وَإِلَيْكَ أَنَبْنَا وَإِلَيْكَ الْمَصِيرُ",transliteration:"Rabbanā ʿalayka tawakkalnā wa ilayka anabnā wa ilaykal-maṣīr",translation:"Our Lord! In You we trust, and to You we turn in repentance; and to You is the final return.",significance:"A dua of complete reliance and surrender — recited when returning to Allah after a period of heedlessness.",source:"Quran 60:4",recommended_count:33},
+{id:47,category:"General Worship",name:"Perfect our light – dua of the believers",arabic:"رَبَّنَاۤ أَتْمِمْ لَنَا نُورَنَا وَاغْفِرْ لَنَا إِنَّكَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",transliteration:"Rabbanā atmim lanā nūranā waghfir lanā, innaka ʿalā kulli shay'in qadīr",translation:"Our Lord! Perfect our Light for us, and grant us Forgiveness; for You have power over all things.",significance:"A dua for complete faith, spiritual light, and forgiveness.",source:"Quran 66:8",recommended_count:33},
+{id:48,category:"General Worship",name:"Do not burden us beyond our capacity",arabic:"رَبَّنَا لَا تُكَلِّفْنَا مَا لَا طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",transliteration:"Rabbanā lā tukallifnā mā lā ṭāqata lanā bih, waʿfu ʿannā waghfir lanā warḥamnā, anta mawlānā fanṣurnā ʿalal-qawmil-kāfirīn",translation:"Our Lord! Do not burden us beyond what we have the strength to bear. Pardon us, forgive us, and have mercy on us. You are our Protector.",significance:"From the closing verses of Surah Al-Baqarah — described as two lights given to no prophet before him.",source:"Quran 2:286",recommended_count:33},
+{id:49,category:"General Worship",name:"Subhan Allah, Alhamdulillah, Allahu Akbar",arabic:"سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَاللَّهُ أَكْبَرُ",transliteration:"Subḥānallāhi wal-ḥamdu lillāhi wallāhu akbar",translation:"How perfect Allah is, all praise is for Allah, and Allah is the greatest.",significance:"Recited 33 times each after every salah. The Prophet ﷺ said no one will be at a loss who says these.",source:"Hisnul Muslim #69 | Sahih Muslim",recommended_count:33},
+{id:50,category:"General Worship",name:"After salah – peace from Allah",arabic:"اللَّهُمَّ أَنتَ السَّلَامُ وَمِنكَ السَّلَامُ تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",transliteration:"Allāhumma antas-salāmu wa minkas-salām, tabārakta yā dhal-jalāli wal-ikrām",translation:"O Allah, You are As-Salam (Peace) and from You is all peace. Blessed are You, O Possessor of majesty and honour.",significance:"The first dhikr after completing salah — recited immediately after salam as taught by the Prophet ﷺ.",source:"Hisnul Muslim #66 | Sahih Muslim",recommended_count:3},
+{id:51,category:"General Worship",name:"Dua for guidance and self-sufficiency",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",transliteration:"Allāhumma innī as'alukal-hudā wat-tuqā wal-ʿafāfa wal-ghinā",translation:"O Allah, I ask You for guidance, piety, chastity and self-sufficiency.",significance:"A short comprehensive prophetic dua covering spiritual, moral, and material needs.",source:"Sahih Muslim 2721",recommended_count:33},
+{id:52,category:"General Worship",name:"Dua for Paradise and refuge from Fire",arabic:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ",transliteration:"Allāhumma innī as'alukal-jannata wa aʿūdhu bika minan-nār",translation:"O Allah, I ask You to grant me Paradise and I take refuge in You from the Fire.",significance:"The Prophet ﷺ said the one who asks for Paradise three times will enter it, and the one who seeks refuge from Fire three times will be protected.",source:"Hisnul Muslim #61 | Tirmidhi (Sahih)",recommended_count:3},
+{id:53,category:"General Worship",name:"Forgive our brothers in faith",arabic:"رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَحِيمٌ",transliteration:"Rabbanā-ghfir lanā wa li'ikhwāninal-ladhīna sabaqūnā bil-īmān, wa lā tajʿal fī qulūbinā ghillan lil-ladhīna āmanū, rabbanā innaka ra'ūfur-raḥīm",translation:"Our Lord! Forgive us, and our brethren who came before us into the Faith, and leave not in our hearts any rancour against those who have believed. Our Lord! You are indeed Full of Kindness, Most Merciful.",significance:"A dua for unity among believers — purifying hearts of envy, grudges, and ill-feeling toward fellow Muslims.",source:"Quran 59:10",recommended_count:33},
+{id:54,category:"General Worship",name:"Do not make us a trial for disbelievers",arabic:"رَبَّنَا لَا تَجْعَلْنَا فِتْنَةً لِلَّذِينَ كَفَرُوا وَاغْفِرْ لَنَا رَبَّنَا إِنَّكَ أَنتَ الْعَزِيزُ الْحَكِيمُ",transliteration:"Rabbanā lā tajʿalnā fitnatan lil-ladhīna kafarū waghfir lanā, rabbanā innaka antal-ʿazīzul-ḥakīm",translation:"Our Lord! Make us not a trial for the disbelievers, but forgive us, our Lord! For You are the Exalted in Might, the Wise.",significance:"For protection from being a source of harm to others and for seeking forgiveness and dignity.",source:"Quran 60:5",recommended_count:33},
+{id:55,category:"General Worship",name:"Praise of Allah removing all sorrow",arabic:"الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنَّا الْحَزَنَ إِنَّ رَبَّنَا لَغَفُورٌ شَكُورٌ",transliteration:"Alḥamdu lillāhil-ladhī adhhaba ʿannal-ḥazan, inna rabbanā laghafūrun shakūr",translation:"Praise be to Allah Who has removed from us all sorrow: for our Lord is indeed Oft-Forgiving, Ready to appreciate.",significance:"The words of the people of Paradise upon entering it — recited as a dua for removal of all grief.",source:"Quran 35:34",recommended_count:33},
+{id:56,category:"General Worship",name:"Dua for patience and firm footing",arabic:"رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",transliteration:"Rabbanā afrigh ʿalaynā ṣabran wa thabbit aqdāmanā wanṣurnā ʿalal-qawmil-kāfirīn",translation:"Our Lord! Pour forth on us patience, make our feet firm, and give us victory.",significance:"Recited in times of trial and difficulty — when standing firm against opposition or hardship.",source:"Quran 2:250",recommended_count:33},
+{id:57,category:"General Worship",name:"The comprehensive dua of good in all affairs",arabic:"رَبَّنَا آمَنَّا فَاغْفِرْ لَنَا وَارْحَمْنَا وَأَنتَ خَيْرُ الرَّاحِمِينَ",transliteration:"Rabbanā āmannā faghfir lanā warḥamnā wa anta khayru-r-rāḥimīn",translation:"Our Lord! We believe, so forgive us, and have mercy on us, for You are the Best of all who show mercy!",significance:"A simple, sincere plea combining iman, request for forgiveness, and mercy — suitable for any moment.",source:"Quran 23:109",recommended_count:33}
+];
+
+const CATEGORIES = [
+  { name:"Sustenance & Rizq",      emoji:"🌿", count:5  },
+  { name:"Marriage & Partnership", emoji:"💍", count:4  },
+  { name:"Healing & Health",       emoji:"🏥", count:4  },
+  { name:"Protection & Safety",    emoji:"🛡️", count:5  },
+  { name:"Knowledge & Wisdom",     emoji:"📚", count:4  },
+  { name:"Work & Success",         emoji:"💼", count:4  },
+  { name:"Children & Family",      emoji:"👶", count:4  },
+  { name:"Forgiveness & Repentance",emoji:"🤲",count:6  },
+  { name:"Anxiety & Grief",        emoji:"😔", count:5  },
+  { name:"General Worship",        emoji:"🌙", count:16 },
+];
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+let currentDua      = null;
+let count           = 0;
+let resetConfirm    = false;
+let resetTimer      = null;
+let hintHidden      = false;
+let tapping         = false;
+let currentScreen   = 'screen1';
+
+/* ══════════════════════════════════════════════════════════
+   BOOKMARKS
+══════════════════════════════════════════════════════════ */
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('duacounter_bookmarks') || '[]'); }
+  catch(e) { return []; }
+}
+function saveBookmarks(ids) {
+  localStorage.setItem('duacounter_bookmarks', JSON.stringify(ids));
+}
+function isBookmarked(id) { return getBookmarks().includes(id); }
+function toggleBookmark(id) {
+  let bms = getBookmarks();
+  if (bms.includes(id)) { bms = bms.filter(x => x !== id); }
+  else { bms.push(id); }
+  saveBookmarks(bms);
+  updateBadge();
+  return bms.includes(id);
+}
+function updateBadge() {
+  const bms  = getBookmarks();
+  const badge = document.getElementById('bm-badge');
+  if (bms.length > 0) {
+    badge.textContent = bms.length;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════════════════════════════ */
+function showScreen(id, pushState = true) {
+  if (id === currentScreen) return;
+  const old = document.getElementById(currentScreen);
+  const next = document.getElementById(id);
+  if (!next) return;
+
+  // Clear any inline styles left over from previous screen3 show, then fade out
+  old.style.opacity = '';
+  old.style.display = '';
+  old.classList.add('fading');
+
+  setTimeout(() => {
+    // Fully hide old screen — clear class AND any inline styles
+    old.classList.remove('active', 'fading');
+    old.style.opacity = '';
+    old.style.display = '';
+
+    // Show new screen
+    if (id === 'screen3') {
+      // #screen3.active { display: flex } handles layout via CSS
+      // Set opacity to 0 first so we can transition it in after display kicks in
+      next.style.opacity = '0';
+      next.classList.add('active');
+      requestAnimationFrame(() => { next.style.opacity = '1'; });
+    } else {
+      next.classList.add('active');
+    }
+
+    currentScreen = id;
+    if (pushState) history.pushState({ screen: id }, '');
+  }, 150);
+}
+
+window.addEventListener('popstate', (e) => {
+  const s = e.state && e.state.screen;
+  if (s) {
+    showScreen(s, false);
+  } else {
+    showScreen('screen1', false);
+  }
+});
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 1 — CATEGORY GRID
+══════════════════════════════════════════════════════════ */
+function buildCategoryGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', cat.name);
+    card.innerHTML = `
+      <span class="cat-emoji">${cat.emoji}</span>
+      <span class="cat-name">${cat.name}</span>
+      <span class="cat-count">${cat.count} duas</span>
+    `;
+    card.addEventListener('click', () => openCategory(cat.name));
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 2 — DUA LIST
+══════════════════════════════════════════════════════════ */
+function openCategory(catName) {
+  document.getElementById('s2-cat-title').textContent = catName;
+  const duas = DUAS.filter(d => d.category === catName);
+  buildDuaList(duas);
+  showScreen('screen2');
+}
+
+function buildDuaList(duas) {
+  const list = document.getElementById('dua-list');
+  list.innerHTML = '';
+  duas.forEach((dua, i) => {
+    const card = document.createElement('div');
+    card.className = 'dua-card';
+    const bm = isBookmarked(dua.id);
+    card.innerHTML = `
+      <div class="dua-arabic" dir="rtl">${dua.arabic}</div>
+      <div class="dua-translation">${dua.translation}</div>
+      <div class="dua-significance">${dua.significance}</div>
+      <div class="dua-footer">
+        <span class="dua-source">${dua.source}</span>
+        <div class="dua-actions">
+          <button class="btn-bookmark ${bm ? 'bookmarked' : ''}"
+            data-id="${dua.id}" aria-label="${bm ? 'Remove bookmark' : 'Bookmark'}">
+            ${bm ? '❤' : '♡'}
+          </button>
+          <button class="btn-begin" data-id="${dua.id}" aria-label="Begin counting">▶ Begin</button>
+        </div>
+      </div>
+    `;
+    // Stagger entrance
+    setTimeout(() => card.classList.add('visible'), i * 60);
+    list.appendChild(card);
+  });
+
+  // Event delegation
+  list.addEventListener('click', (e) => {
+    const bmBtn = e.target.closest('.btn-bookmark');
+    const beginBtn = e.target.closest('.btn-begin');
+    if (bmBtn) {
+      const id = parseInt(bmBtn.dataset.id);
+      const added = toggleBookmark(id);
+      bmBtn.textContent = added ? '❤' : '♡';
+      bmBtn.classList.toggle('bookmarked', added);
+      bmBtn.classList.add('heart-pulse');
+      setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
+    }
+    if (beginBtn) {
+      const id = parseInt(beginBtn.dataset.id);
+      const dua = DUAS.find(d => d.id === id);
+      if (dua) openCounter(dua);
+    }
+  }, { once: true });
+
+  // Re-attach on each build
+  list.onclick = (e) => {
+    const bmBtn = e.target.closest('.btn-bookmark');
+    const beginBtn = e.target.closest('.btn-begin');
+    if (bmBtn) {
+      const id = parseInt(bmBtn.dataset.id);
+      const added = toggleBookmark(id);
+      bmBtn.textContent = added ? '❤' : '♡';
+      bmBtn.classList.toggle('bookmarked', added);
+      bmBtn.classList.add('heart-pulse');
+      setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
+    }
+    if (beginBtn) {
+      const id = parseInt(beginBtn.dataset.id);
+      const dua = DUAS.find(d => d.id === id);
+      if (dua) openCounter(dua);
+    }
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCREEN 3 — COUNTER
+══════════════════════════════════════════════════════════ */
+function openCounter(dua) {
+  currentDua = dua;
+  count      = 0;
+  hintHidden = false;
+  resetConfirm = false;
+
+  document.getElementById('s3-arabic').textContent     = dua.arabic;
+  document.getElementById('s3-translation').textContent = dua.translation;
+  document.getElementById('s3-translit').textContent    = dua.transliteration;
+  document.getElementById('s3-cat-pill').textContent    = dua.category;
+  document.getElementById('count-display').textContent  = '0';
+  document.getElementById('s3-recommended').textContent =
+    `recommended: ${dua.recommended_count}×`;
+  document.getElementById('hint-text').classList.remove('hidden');
+  document.getElementById('completed-text').classList.remove('show');
+
+  updateS3BookmarkBtn();
+  updateArc(0);
+
+  showScreen('screen3');
+}
+
+function updateS3BookmarkBtn() {
+  if (!currentDua) return;
+  const btn = document.getElementById('s3-bm-btn');
+  btn.textContent = isBookmarked(currentDua.id) ? '❤' : '♡';
+}
+
+/* Arc progress */
+function updateArc(n) {
+  const circumference = 2 * Math.PI * 55; // ~345.4
+  const arc = document.getElementById('arc-progress');
+  if (!currentDua) return;
+  const pct = Math.min(n / currentDua.recommended_count, 1);
+  const offset = circumference * (1 - pct);
+  arc.style.strokeDashoffset = offset;
+}
+
+/* ── Tap handler ─────────────────────────────────────────── */
+function handleTap(e) {
+  count++;
+  const display = document.getElementById('count-display');
+  display.textContent = count;
+
+  // Ripple
+  const zone = document.getElementById('counter-zone');
+  const rect = zone.getBoundingClientRect();
+  let x, y;
+  if (e.touches && e.touches[0]) {
+    x = e.touches[0].clientX - rect.left;
+    y = e.touches[0].clientY - rect.top;
+  } else {
+    x = e.clientX - rect.left;
+    y = e.clientY - rect.top;
+  }
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.left = x + 'px';
+  ripple.style.top  = y + 'px';
+  zone.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 620);
+
+  // Pulse
+  display.classList.remove('pulse');
+  void display.offsetWidth; // reflow
+  display.classList.add('pulse');
+  setTimeout(() => display.classList.remove('pulse'), 210);
+
+  // Sound
+  playBeadSound();
+
+  // Hide hint
+  if (!hintHidden) {
+    hintHidden = true;
+    document.getElementById('hint-text').classList.add('hidden');
+  }
+
+  // Arc
+  updateArc(count);
+
+  // Completion
+  if (currentDua && count === currentDua.recommended_count) {
+    display.classList.add('complete-flash');
+    setTimeout(() => display.classList.remove('complete-flash'), 420);
+    const ct = document.getElementById('completed-text');
+    ct.classList.add('show');
+    setTimeout(() => ct.classList.remove('show'), 2200);
+  }
+}
+
+/* Prevent double-fire on mobile */
+const counterZone = document.getElementById('counter-zone');
+counterZone.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (tapping) return;
+  tapping = true;
+  handleTap(e);
+  setTimeout(() => { tapping = false; }, 50);
+}, { passive: false });
+counterZone.addEventListener('click', (e) => {
+  if (!tapping) handleTap(e);
+});
+
+/* ── Reset ───────────────────────────────────────────────── */
+document.getElementById('btn-reset').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  if (!resetConfirm) {
+    resetConfirm = true;
+    btn.textContent = 'Tap again to reset';
+    btn.classList.add('shaking');
+    setTimeout(() => btn.classList.remove('shaking'), 320);
+    resetTimer = setTimeout(() => {
+      resetConfirm = false;
+      btn.textContent = 'Reset';
+    }, 2000);
+  } else {
+    clearTimeout(resetTimer);
+    resetConfirm = false;
+    btn.textContent = 'Reset';
+    count = 0;
+    document.getElementById('count-display').textContent = '0';
+    document.getElementById('completed-text').classList.remove('show');
+    hintHidden = false;
+    document.getElementById('hint-text').classList.remove('hidden');
+    updateArc(0);
+  }
+});
+
+/* ── Decrement ───────────────────────────────────────────── */
+document.getElementById('btn-decrement').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (count > 0) {
+    count--;
+    document.getElementById('count-display').textContent = count;
+    updateArc(count);
+  }
+});
+
+/* ── S3 Bookmark ─────────────────────────────────────────── */
+document.getElementById('s3-bm-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!currentDua) return;
+  const added = toggleBookmark(currentDua.id);
+  const btn = document.getElementById('s3-bm-btn');
+  btn.textContent = added ? '❤' : '♡';
+  btn.classList.add('heart-pulse');
+  setTimeout(() => btn.classList.remove('heart-pulse'), 260);
+  // Also update drawer if open
+  renderDrawer();
+});
+
+/* ── S3 Share ─────────────────────────────────────────────── */
+document.getElementById('s3-share-btn').addEventListener('click', async (e) => {
+  e.stopPropagation();
+  if (!currentDua) return;
+  await generateAndShare(currentDua);
+});
+
+/* ══════════════════════════════════════════════════════════
+   WEB AUDIO — BEAD SOUND
+══════════════════════════════════════════════════════════ */
+function playBeadSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx  = new AudioCtx();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.09);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.09);
+    setTimeout(() => { try { ctx.close(); } catch(e){} }, 500);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════════
+   SHARE CARD (Canvas API)
+══════════════════════════════════════════════════════════ */
+async function generateAndShare(dua) {
+  await document.fonts.ready;
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = 1080;
+  canvas.height = 1080;
+  const ctx = canvas.getContext('2d');
+
+  // 1. Background
+  ctx.fillStyle = '#0d1a0d';
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  // 2. Geometric pattern
+  ctx.strokeStyle = 'rgba(201,168,76,0.06)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx < 1080; gx += 80) {
+    for (let gy = 0; gy < 1080; gy += 80) {
+      drawStar8(ctx, gx + 40, gy + 40, 16, 8);
+    }
+  }
+
+  // 3. Top decorative line
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, 120); ctx.lineTo(1020, 120); ctx.stroke();
+
+  // 4. "دعاء"
+  ctx.font = "bold 72px 'Amiri'";
+  ctx.fillStyle = '#e8c96d';
+  ctx.textAlign = 'center';
+  ctx.direction = 'rtl';
+  ctx.fillText('دعاء', 540, 105);
+  ctx.direction = 'ltr';
+
+  // 5. Arabic text — auto-wrap
+  ctx.font = "400 42px 'Amiri'";
+  ctx.fillStyle = '#e8c96d';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  wrapText(ctx, dua.arabic, 540, 360, 900, 56, true);
+  ctx.direction = 'ltr';
+
+  // 6. English translation
+  ctx.font = "italic 28px 'Cormorant Garamond'";
+  ctx.fillStyle = '#f5f0e8';
+  ctx.textAlign = 'center';
+  wrapText(ctx, dua.translation, 540, 560, 900, 38, false);
+
+  // 7. Transliteration
+  ctx.font = "400 22px 'Tajawal'";
+  ctx.fillStyle = '#7a9e72';
+  ctx.textAlign = 'center';
+  wrapText(ctx, dua.transliteration, 540, 660, 860, 30, false);
+
+  // 8. Source
+  ctx.font = "400 18px 'Tajawal'";
+  ctx.fillStyle = 'rgba(201,168,76,0.6)';
+  ctx.textAlign = 'center';
+  ctx.fillText(dua.source, 540, 720);
+
+  // 9. Bottom line
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, 960); ctx.lineTo(1020, 960); ctx.stroke();
+
+  // 10. DuaCounter watermark
+  ctx.font = "300 18px 'Tajawal'";
+  ctx.fillStyle = 'rgba(201,168,76,0.5)';
+  ctx.textAlign = 'right';
+  ctx.fillText('DuaCounter', 1040, 1000);
+
+  // Share
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'dua-card.png', { type: 'image/png' });
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'DuaCounter', text: dua.translation });
+      } else { throw new Error('no share'); }
+    } catch(e) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'dua-card.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    }
+  }, 'image/png');
+}
+
+function drawStar8(ctx, cx, cy, outer, inner) {
+  const pts = 8;
+  ctx.beginPath();
+  for (let i = 0; i < pts * 2; i++) {
+    const angle = (i * Math.PI) / pts - Math.PI / 2;
+    const r = i % 2 === 0 ? outer : inner;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, rtl) {
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for (let i = 0; i < words.length; i++) {
+    const test = line + (line ? ' ' : '') + words[i];
+    const m = ctx.measureText(test);
+    if (m.width > maxWidth && line !== '') {
+      ctx.fillText(line, x, curY);
+      line = words[i];
+      curY += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, curY);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOOKMARKS DRAWER
+══════════════════════════════════════════════════════════ */
+function openDrawer() {
+  renderDrawer();
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer-panel').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer-panel').classList.remove('open');
+}
+function renderDrawer() {
+  const body = document.getElementById('drawer-body');
+  const bms  = getBookmarks();
+  body.innerHTML = '';
+  if (bms.length === 0) {
+    body.innerHTML = '<p class="drawer-empty">No saved duas yet</p>';
+    return;
+  }
+  bms.forEach(id => {
+    const dua = DUAS.find(d => d.id === id);
+    if (!dua) return;
+    const card = document.createElement('div');
+    card.className = 'drawer-card';
+    card.innerHTML = `
+      <div class="drawer-card-arabic" dir="rtl">${dua.arabic}</div>
+      <div class="drawer-card-trans">${dua.translation}</div>
+      <div class="drawer-card-actions">
+        <button class="drawer-begin-btn" data-id="${dua.id}">▶ Begin</button>
+        <button class="drawer-remove-btn" data-id="${dua.id}">✕ Remove</button>
+      </div>
+    `;
+    body.appendChild(card);
+  });
+
+  body.onclick = (e) => {
+    const beginBtn  = e.target.closest('.drawer-begin-btn');
+    const removeBtn = e.target.closest('.drawer-remove-btn');
+    if (beginBtn) {
+      const id  = parseInt(beginBtn.dataset.id);
+      const dua = DUAS.find(d => d.id === id);
+      if (dua) { closeDrawer(); openCounter(dua); }
+    }
+    if (removeBtn) {
+      const id = parseInt(removeBtn.dataset.id);
+      toggleBookmark(id);
+      renderDrawer();
+      updateBadge();
+    }
+  };
+}
+
+/* ── Drawer listeners ────────────────────────────────────── */
+document.getElementById('open-drawer-btn').addEventListener('click', openDrawer);
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
+
+/* S2 bookmark icon opens drawer */
+document.getElementById('s2-bm-btn').addEventListener('click', openDrawer);
+
+/* ── Back buttons ──────────────────────────────────────────── */
+document.getElementById('s2-back').addEventListener('click', () => {
+  history.back();
+});
+document.getElementById('s3-back').addEventListener('click', () => {
+  history.back();
+});
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+buildCategoryGrid();
+updateBadge();
+
+// Initial history state
+history.replaceState({ screen: 'screen1' }, '');
+</script>
+</body>
+</html>
