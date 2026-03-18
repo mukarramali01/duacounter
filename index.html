@@ -271,12 +271,15 @@ input { font-size: 16px; }
 .dua-card {
   background: var(--bg-card);
   border: 1px solid var(--border-gold);
+  cursor: pointer;
   border-radius: 16px;
   padding: 18px;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
+.dua-card:hover { border-color: rgba(201, 168, 76, 0.5); background: #243d24; }
+.dua-card:active { transform: scale(0.985); }
 .dua-card.visible {
   opacity: 1;
   transform: translateY(0);
@@ -1108,6 +1111,7 @@ function buildDuaList(duas) {
   duas.forEach((dua, i) => {
     const card = document.createElement('div');
     card.className = 'dua-card';
+    card.dataset.id = dua.id;
     const bm = isBookmarked(dua.id);
     card.innerHTML = `
       <div class="dua-arabic" dir="rtl">${dua.arabic}</div>
@@ -1133,6 +1137,7 @@ function buildDuaList(duas) {
   list.addEventListener('click', (e) => {
     const bmBtn = e.target.closest('.btn-bookmark');
     const beginBtn = e.target.closest('.btn-begin');
+    const card = e.target.closest('.dua-card');
     if (bmBtn) {
       const id = parseInt(bmBtn.dataset.id);
       const added = toggleBookmark(id);
@@ -1140,6 +1145,12 @@ function buildDuaList(duas) {
       bmBtn.classList.toggle('bookmarked', added);
       bmBtn.classList.add('heart-pulse');
       setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
+      return;
+    }
+    if (card) {
+      const id = parseInt(card.dataset.id);
+      const dua = DUAS.find(d => d.id === id);
+      if (dua) openCounter(dua);
     }
     if (beginBtn) {
       const id = parseInt(beginBtn.dataset.id);
