@@ -1158,12 +1158,11 @@ function updateS3BookmarkBtn() {
 
 /* Arc progress */
 function updateArc(n) {
-  const circumference = 2 * Math.PI * 55; // ~345.4
   const arc = document.getElementById('arc-progress');
-  if (!currentDua) return;
+  if (!arc || !currentDua) return;
+  const circumference = 2 * Math.PI * 55;
   const pct = Math.min(n / currentDua.recommended_count, 1);
-  const offset = circumference * (1 - pct);
-  arc.style.strokeDashoffset = offset;
+  arc.style.strokeDashoffset = circumference * (1 - pct);
 }
 
 /* ── Tap handler ─────────────────────────────────────────── */
