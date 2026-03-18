@@ -1133,11 +1133,10 @@ function buildDuaList(duas) {
     list.appendChild(card);
   });
 
-  // Event delegation
-  list.addEventListener('click', (e) => {
+  // Event delegation — persistent, handles all card clicks
+  list.onclick = (e) => {
     const bmBtn = e.target.closest('.btn-bookmark');
-    const beginBtn = e.target.closest('.btn-begin');
-    const card = e.target.closest('.dua-card');
+    const card  = e.target.closest('.dua-card');
     if (bmBtn) {
       const id = parseInt(bmBtn.dataset.id);
       const added = toggleBookmark(id);
@@ -1149,30 +1148,6 @@ function buildDuaList(duas) {
     }
     if (card) {
       const id = parseInt(card.dataset.id);
-      const dua = DUAS.find(d => d.id === id);
-      if (dua) openCounter(dua);
-    }
-    if (beginBtn) {
-      const id = parseInt(beginBtn.dataset.id);
-      const dua = DUAS.find(d => d.id === id);
-      if (dua) openCounter(dua);
-    }
-  }, { once: true });
-
-  // Re-attach on each build
-  list.onclick = (e) => {
-    const bmBtn = e.target.closest('.btn-bookmark');
-    const beginBtn = e.target.closest('.btn-begin');
-    if (bmBtn) {
-      const id = parseInt(bmBtn.dataset.id);
-      const added = toggleBookmark(id);
-      bmBtn.textContent = added ? '❤' : '♡';
-      bmBtn.classList.toggle('bookmarked', added);
-      bmBtn.classList.add('heart-pulse');
-      setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
-    }
-    if (beginBtn) {
-      const id = parseInt(beginBtn.dataset.id);
       const dua = DUAS.find(d => d.id === id);
       if (dua) openCounter(dua);
     }
