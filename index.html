@@ -561,16 +561,20 @@ input { font-size: 16px; }
 
 /* Ripple */
 .ripple {
-  position: absolute;
-  width: 12px; height: 12px;
-  background: rgba(201, 168, 76, 0.35);
+  position: fixed;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(26,46,26,0.12) 60%, transparent 100%);
+  border: 1.5px solid rgba(201,168,76,0.25);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0);
-  animation: ripple-out 0.6s ease-out forwards;
+  animation: ripple-out 0.65s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
   pointer-events: none;
+  z-index: 999;
 }
 @keyframes ripple-out {
-  to { transform: translate(-50%, -50%) scale(28); opacity: 0; }
+  0%   { transform: translate(-50%, -50%) scale(0);  opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(22); opacity: 0; }
 }
 
 /* Bottom controls */
@@ -1178,30 +1182,15 @@ function handleTap(e) {
   const display = document.getElementById('count-display');
   display.textContent = count;
 
-  // Ripple
-  const zone = document.getElementById('counter-zone');
-  const rect = zone.getBoundingClientRect();
-  let x, y;
-  if (e.touches && e.touches[0]) {
-    x = e.touches[0].clientX - rect.left;
-    y = e.touches[0].clientY - rect.top;
-  } else {
-    x = e.clientX - rect.left;
-    y = e.clientY - rect.top;
-  }
+  // Full-screen ripple from tap point
+  const tx = e.touches?.[0]?.clientX ?? e.clientX;
+  const ty = e.touches?.[0]?.clientY ?? e.clientY;
   const ripple = document.createElement('span');
   ripple.className = 'ripple';
-  ripple.style.left = x + 'px';
-  ripple.style.top  = y + 'px';
-  zone.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 620);
-
-  // Bounce whole screen
-  const s3 = document.getElementById('screen3');
-  s3.classList.remove('bounce');
-  void s3.offsetWidth;
-  s3.classList.add('bounce');
-  setTimeout(() => s3.classList.remove('bounce'), 380);
+  ripple.style.left = tx + 'px';
+  ripple.style.top  = ty + 'px';
+  document.getElementById('screen3').appendChild(ripple);
+  setTimeout(() => ripple.remove(), 700);
 
   // Vibration
   if (navigator.vibrate) navigator.vibrate(8);
