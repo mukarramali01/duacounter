@@ -386,7 +386,7 @@ input { font-size: 16px; }
   overflow: hidden;
   display: none;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse at center, var(--bg-secondary) 0%, var(--bg-primary) 70%);
 }
 #screen3.active { display: flex; }
 
@@ -470,7 +470,6 @@ input { font-size: 16px; }
   flex: 1;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, var(--bg-secondary) 0%, var(--bg-primary) 70%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -519,6 +518,15 @@ input { font-size: 16px; }
   100% { transform: scale(1); }
 }
 #count-display.pulse { animation: count-pulse 200ms ease-out forwards; }
+
+@keyframes screen-bounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.96); }
+  55%  { transform: scale(1.03); }
+  75%  { transform: scale(0.985); }
+  100% { transform: scale(1); }
+}
+#screen3.bounce { animation: screen-bounce 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards; }
 @keyframes gold-flash {
   0%   { color: var(--gold-primary); }
   50%  { color: var(--gold-light); text-shadow: 0 0 20px rgba(232,201,109,0.8); }
@@ -1188,11 +1196,12 @@ function handleTap(e) {
   zone.appendChild(ripple);
   setTimeout(() => ripple.remove(), 620);
 
-  // Pulse
-  display.classList.remove('pulse');
-  void display.offsetWidth; // reflow
-  display.classList.add('pulse');
-  setTimeout(() => display.classList.remove('pulse'), 210);
+  // Bounce whole screen
+  const s3 = document.getElementById('screen3');
+  s3.classList.remove('bounce');
+  void s3.offsetWidth;
+  s3.classList.add('bounce');
+  setTimeout(() => s3.classList.remove('bounce'), 380);
 
   // Vibration
   if (navigator.vibrate) navigator.vibrate(8);
