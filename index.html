@@ -858,15 +858,6 @@ input { font-size: 16px; }
     <div class="s3-bottom-half">
       <div id="counter-zone" role="button" aria-label="Count">
         <div class="progress-ring-wrap">
-          <svg class="progress-ring-svg" id="progress-svg" width="140" height="140">
-            <circle id="arc-track" cx="70" cy="70" r="55"
-              fill="none" stroke="rgba(201,168,76,0.15)" stroke-width="2"/>
-            <circle id="arc-progress" cx="70" cy="70" r="55"
-              fill="none" stroke="#c9a84c" stroke-width="2"
-              stroke-linecap="round"
-              stroke-dasharray="345.4"
-              stroke-dashoffset="345.4"/>
-          </svg>
           <span id="count-display">0</span>
         </div>
         <div class="count-completed-text" id="completed-text" dir="rtl">الحمد لله</div>
@@ -1250,16 +1241,18 @@ function handleTap(e) {
   }
 }
 
-/* Prevent double-fire on mobile */
-const counterZone = document.getElementById('counter-zone');
-counterZone.addEventListener('touchstart', (e) => {
+/* Tap anywhere on screen3 to count — ignore control buttons */
+const screen3El = document.getElementById('screen3');
+screen3El.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.s3-controls, .s3-header, button, a')) return;
   e.preventDefault();
   if (tapping) return;
   tapping = true;
   handleTap(e);
   setTimeout(() => { tapping = false; }, 50);
 }, { passive: false });
-counterZone.addEventListener('click', (e) => {
+screen3El.addEventListener('click', (e) => {
+  if (e.target.closest('.s3-controls, .s3-header, button, a')) return;
   if (!tapping) handleTap(e);
 });
 
