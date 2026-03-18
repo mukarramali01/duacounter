@@ -1350,7 +1350,7 @@ async function generateAndShare(dua) {
 
   const canvas = document.createElement('canvas');
   canvas.width  = 1080;
-  canvas.height = 1080;
+  canvas.height = 1140;
   const ctx = canvas.getContext('2d');
 
   // 1. Background
@@ -1410,11 +1410,21 @@ async function generateAndShare(dua) {
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(60, 960); ctx.lineTo(1020, 960); ctx.stroke();
 
-  // 10. DuaCounter watermark
-  ctx.font = "300 18px 'Tajawal'";
-  ctx.fillStyle = 'rgba(201,168,76,0.5)';
-  ctx.textAlign = 'right';
-  ctx.fillText('DuaCounter', 1040, 1000);
+  // 10. CTA section
+  // Tasbeeh icon
+  ctx.font = "32px serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('📿', 540, 990);
+
+  // CTA headline
+  ctx.font = "600 26px 'Tajawal'";
+  ctx.fillStyle = 'rgba(201,168,76,0.95)';
+  ctx.fillText('Start your Tasbeeh today — it\'s free', 540, 1025);
+
+  // Website link
+  ctx.font = "300 20px 'Tajawal'";
+  ctx.fillStyle = 'rgba(201,168,76,0.55)';
+  ctx.fillText('duas.analystali.com', 540, 1055);
 
   // Share
   canvas.toBlob(async (blob) => {
