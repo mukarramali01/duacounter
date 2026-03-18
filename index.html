@@ -1123,26 +1123,6 @@ function buildDuaList(duas) {
     setTimeout(() => card.classList.add('visible'), i * 60);
     list.appendChild(card);
   });
-
-  // Event delegation — persistent, handles all card clicks
-  list.onclick = (e) => {
-    const bmBtn = e.target.closest('.btn-bookmark');
-    const card  = e.target.closest('.dua-card');
-    if (bmBtn) {
-      const id = parseInt(bmBtn.dataset.id);
-      const added = toggleBookmark(id);
-      bmBtn.textContent = added ? '❤' : '♡';
-      bmBtn.classList.toggle('bookmarked', added);
-      bmBtn.classList.add('heart-pulse');
-      setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
-      return;
-    }
-    if (card) {
-      const id = parseInt(card.dataset.id);
-      const dua = DUAS.find(d => d.id === id);
-      if (dua) openCounter(dua);
-    }
-  };
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1240,6 +1220,26 @@ function handleTap(e) {
     setTimeout(() => ct.classList.remove('show'), 2200);
   }
 }
+
+/* ── Dua list — permanent click handler (set once) ──────── */
+document.getElementById('dua-list').addEventListener('click', (e) => {
+  const bmBtn = e.target.closest('.btn-bookmark');
+  const card  = e.target.closest('.dua-card');
+  if (bmBtn) {
+    const id = parseInt(bmBtn.dataset.id);
+    const added = toggleBookmark(id);
+    bmBtn.textContent = added ? '❤' : '♡';
+    bmBtn.classList.toggle('bookmarked', added);
+    bmBtn.classList.add('heart-pulse');
+    setTimeout(() => bmBtn.classList.remove('heart-pulse'), 260);
+    return;
+  }
+  if (card) {
+    const id = parseInt(card.dataset.id);
+    const dua = DUAS.find(d => d.id === id);
+    if (dua) openCounter(dua);
+  }
+});
 
 /* Tap anywhere on screen3 to count — ignore control buttons */
 const screen3El = document.getElementById('screen3');
