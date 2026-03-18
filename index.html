@@ -567,7 +567,7 @@ input { font-size: 16px; }
   border: 1.5px solid rgba(201,168,76,0.25);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0);
-  animation: ripple-out 1.2s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+  animation: ripple-out 2s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
   pointer-events: none;
   z-index: 999;
 }
@@ -1190,7 +1190,7 @@ function handleTap(e) {
   ripple.style.left = tx + 'px';
   ripple.style.top  = ty + 'px';
   document.getElementById('screen3').appendChild(ripple);
-  setTimeout(() => ripple.remove(), 1250);
+  setTimeout(() => ripple.remove(), 2100);
 
   // Vibration
   if (navigator.vibrate) navigator.vibrate(8);
