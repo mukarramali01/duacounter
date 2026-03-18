@@ -6,7 +6,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0d1a0d">
-  <title>DuaCounter</title>
+  <title>DuaCounter – Dua & Tasbeeh Counter</title>
+  <!-- OG / Social Meta -->
+  <meta name="description" content="Read authentic Islamic duas and count your Tasbeeh recitations — all in one place.">
+  <meta property="og:title" content="DuaCounter – Dua & Tasbeeh Counter">
+  <meta property="og:description" content="Select a dua, tap the screen to count your Tasbeeh. 100% authentic duas from Quran & Sunnah.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://duas.analystali.com">
+  <meta property="og:image" content="https://duas.analystali.com/preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DuaCounter – Dua & Tasbeeh Counter">
+  <meta name="twitter:description" content="Select a dua, tap the screen to count your Tasbeeh. 100% authentic duas from Quran & Sunnah.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
@@ -1108,7 +1118,7 @@ function buildDuaList(duas) {
             data-id="${dua.id}" aria-label="${bm ? 'Remove bookmark' : 'Bookmark'}">
             ${bm ? '❤' : '♡'}
           </button>
-          <button class="btn-begin" data-id="${dua.id}" aria-label="Begin counting">▶ Begin</button>
+          <button class="btn-begin" data-id="${dua.id}" aria-label="Begin counting">📿 Start Tasbeeh</button>
         </div>
       </div>
     `;
@@ -1226,6 +1236,9 @@ function handleTap(e) {
   void display.offsetWidth; // reflow
   display.classList.add('pulse');
   setTimeout(() => display.classList.remove('pulse'), 210);
+
+  // Vibration
+  if (navigator.vibrate) navigator.vibrate(8);
 
   // Sound
   playBeadSound();
@@ -1493,7 +1506,7 @@ function renderDrawer() {
       <div class="drawer-card-arabic" dir="rtl">${dua.arabic}</div>
       <div class="drawer-card-trans">${dua.translation}</div>
       <div class="drawer-card-actions">
-        <button class="drawer-begin-btn" data-id="${dua.id}">▶ Begin</button>
+        <button class="drawer-begin-btn" data-id="${dua.id}">📿 Start Tasbeeh</button>
         <button class="drawer-remove-btn" data-id="${dua.id}">✕ Remove</button>
       </div>
     `;
